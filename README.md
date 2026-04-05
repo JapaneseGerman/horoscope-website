@@ -3,7 +3,7 @@
 [![Deploy on Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
 ## 🌐 Live Demo
-[https://horoscope-website.onrender.com](https://horoscope-website.onrender.com)
+[https://horoscope-website-3jkz.onrender.com/](https://horoscope-website-3jkz.onrender.com/)
 
 ## ✨ Features
 - 🔮 Daily horoscope for all zodiac signs
