@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horoscope - 今日の運勢 | Daily Horoscope</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        /* Светлая тема (по умолчанию) */
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --card-bg: white;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border-color: #ddd;
+            --result-bg: #f8f9fa;
+            --result-text: #333;
+            --footer-text: rgba(255,255,255,0.9);
+            --select-bg: white;
+            --select-text: #333;
+            --button-text: white;
+        }
+        
+        /* Темная тема */
+        body.dark {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: #2d2d44;
+            --text-primary: #f0f0f0;
+            --text-secondary: #aaa;
+            --border-color: #444;
+            --result-bg: #1e1e2e;
+            --result-text: #e0e0e0;
+            --footer-text: rgba(255,255,255,0.7);
+            --select-bg: #3d3d5c;
+            --select-text: #f0f0f0;
+            --button-text: white;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+        
+        /* Переключатель темы */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        
+        .theme-switch {
+            display: inline-block;
+            position: relative;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "☀️";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+            content: "🌙";
+        }
+        
+        .selector-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        select {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--select-bg);
+            color: var(--select-text);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        select:hover {
+            border-color: #667eea;
+        }
+        
+        select option {
+            background: var(--select-bg);
+            color: var(--select-text);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--button-text);
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-weight: bold;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+        }
+        
+        .result {
+            background: var(--result-bg);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            min-height: 400px;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            font-size: 16px;
+            font-family: inherit;
+            color: var(--result-text);
+        }
+        
+        .loading {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 60px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: var(--footer-text);
+            margin-top: 20px;
+            padding: 20px;
+        }
+        
+        .creator {
+            font-size: 14px;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+        
+        .creator a {
+            color: var(--footer-text);
+            text-decoration: none;
+            border-bottom: 1px dotted rgba(255,255,255,0.5);
+        }
+        
+        .creator a:hover {
+            color: white;
+            border-bottom-color: white;
+        }
+        
+        @media (max-width: 600px) {
+            .card {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .selector-group {
+                gap: 10px;
+            }
+            
+            select, button {
+                width: 100%;
+            }
+            
+            .result {
+                padding: 20px;
+                font-size: 14px;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <h1>🔮 今日の運勢</h1>
+            <div class="subtitle">Daily Horoscope</div>
+            
+            <div class="selector-group">
+                <select id="sign">
+                    <option value="aries">♈ 牡羊座 / Aries</option>
+                    <option value="taurus">♉ 牡牛座 / Taurus</option>
+                    <option value="gemini">♊ 双子座 / Gemini</option>
+                    <option value="cancer">♋ 蟹座 / Cancer</option>
+                    <option value="leo">♌ 獅子座 / Leo</option>
+                    <option value="virgo">♍ 乙女座 / Virgo</option>
+                    <option value="libra">♎ 天秤座 / Libra</option>
+                    <option value="scorpio">♏ 蠍座 / Scorpio</option>
+                    <option value="sagittarius">♐ 射手座 / Sagittarius</option>
+                    <option value="capricorn">♑ 山羊座 / Capricorn</option>
+                    <option value="aquarius">♒ 水瓶座 / Aquarius</option>
+                    <option value="pisces">♓ 魚座 / Pisces</option>
+                </select>
+                
+                <select id="day">
+                    <option value="today">📅 今日 / Today</option>
+                    <option value="tomorrow">⏰ 明日 / Tomorrow</option>
+                </select>
+                
+                <select id="lang">
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="en">🇬🇧 English</option>
+                </select>
+            </div>
+            
+            <div style="text-align: center;">
+                <button onclick="getHoroscope()">🔮 占う / Get Horoscope</button>
+            </div>
+            
+            <div id="result" class="result">
+                <div class="loading">✨ 星座を選んで「占う」を押してください ✨<br><br>Select your sign and click "Get Horoscope"</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div>✨ 毎日の運勢をチェック！ / Check your daily horoscope! ✨</div>
+            <div class="creator">
+                Created by <strong>ROMAN ROTHERMEL</strong>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // テーマの切り替え / Theme switching
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        // 保存されたテーマを読み込み / Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+            themeToggle.checked = true;
+        }
+        
+        // テーマ切り替えイベント / Theme toggle event
+        themeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+        
+        let lastRequest = null;
+        
+        async function getHoroscope() {
+            const sign = document.getElementById('sign').value;
+            const day = document.getElementById('day').value;
+            const lang = document.getElementById('lang').value;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">⏳ 占いを取得中... / Loading horoscope... 🔮</div>';
+            
+            try {
+                const response = await fetch('/horoscope', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ sign, day, lang })
+                });
+                
+                const data = await response.json();
+                
+                let html = data.horoscope
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br>');
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="loading">❌ エラーが発生しました / An error occurred<br><br>もう一度お試しください / Please try again</div>';
+                console.error('Error:', error);
+            }
+        }
+        
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                getHoroscope();
+            }
+        });
+    </script>
+</body>
+</html>
